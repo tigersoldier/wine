@@ -29,6 +29,8 @@
 #include <winbase.h>
 #include <objbase.h>
 #include <richedit.h>
+/* should be included before initguid.h to avoid multiple difenition with richole.c */
+#include <tom.h>
 #include <initguid.h>
 #include <textserv.h>
 #include <wine/test.h>
@@ -857,13 +859,15 @@ static void test_COM(void)
     struct unk_impl unk_obj = {{&unk_vtbl}, 19, NULL};
     struct ITextHostTestImpl texthost = {{&itextHostVtbl}, 1};
     ITextServices *textsrv;
+    ITextDocument *textdoc;
     ULONG refcount;
     HRESULT hr;
 
-    /* COM aggregation */
+    /* COM aggregation on ITextServices */
     hr = pCreateTextServices(&unk_obj.IUnknown_iface, &texthost.ITextHost_iface,
                              &unk_obj.inner_unk);
     ok(hr == S_OK, "CreateTextServices failed: %08x\n", hr);
+
     hr = IUnknown_QueryInterface(unk_obj.inner_unk, pIID_ITextServices, (void**)&textsrv);
     ok(hr == S_OK, "QueryInterface for IID_ITextServices failed: %08x\n", hr);
     refcount = ITextServices_AddRef(textsrv);
@@ -871,6 +875,16 @@ static void test_COM(void)
     refcount = ITextServices_Release(textsrv);
     ok(refcount == unk_obj.ref, "CreateTextServices just pretends to support COM aggregation\n");
     refcount = ITextServices_Release(textsrv);
+
+    /* COM aggregation on ITextDocument */
+    hr = IUnknown_QueryInterface(unk_obj.inner_unk, &IID_ITextDocument, (void**)&textdoc);
+    ok(hr == S_OK, "QueryInterface for IID_ITextDocument failed: %08x\n", hr);
+    refcount = ITextDocument_AddRef(textdoc);
+    ok(refcount == unk_obj.ref, "CreateTextServices just pretends to support COM aggregation\n");
+    refcount = ITextDocument_Release(textdoc);
+    ok(refcount == unk_obj.ref, "CreateTextServices just pretends to support COM aggregation\n");
+    refcount = ITextDocument_Release(textdoc);
+
     ok(refcount == 19, "Refcount should be back at 19 but is %u\n", refcount);
 
     IUnknown_Release(unk_obj.inner_unk);

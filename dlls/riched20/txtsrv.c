@@ -31,6 +31,7 @@
 #include "richole.h"
 #include "imm.h"
 #include "textserv.h"
+#include "txtdoc.h"
 #include "wine/debug.h"
 #include "editstr.h"
 
@@ -61,6 +62,7 @@ typedef struct ITextServicesImpl {
    ITextHost *pMyHost;
    CRITICAL_SECTION csTxtSrv;
    ME_TextEditor *editor;
+   ReTxtDoc *txtDoc;
    char spare[256];
 } ITextServicesImpl;
 
@@ -79,6 +81,8 @@ static HRESULT WINAPI ITextServicesImpl_QueryInterface(IUnknown *iface, REFIID r
       *ppv = &This->IUnknown_inner;
    else if (IsEqualIID(riid, &IID_ITextServices))
       *ppv = &This->ITextServices_iface;
+   else if (IsEqualIID(riid, &IID_ITextDocument))
+      *ppv = ReTxtDoc_get_ITextDocument(This->txtDoc);
    else {
       *ppv = NULL;
       FIXME("Unknown interface: %s\n", debugstr_guid(riid));
@@ -111,6 +115,7 @@ static ULONG WINAPI ITextServicesImpl_Release(IUnknown *iface)
       ITextHost_Release(This->pMyHost);
       This->csTxtSrv.DebugInfo->Spare[0] = 0;
       DeleteCriticalSection(&This->csTxtSrv);
+      ReTxtDoc_destroy(This->txtDoc);
       CoTaskMemFree(This);
    }
    return ref;
@@ -420,6 +425,7 @@ HRESULT WINAPI CreateTextServices(IUnknown  *pUnkOuter, ITextHost *pITextHost, I
       ITextImpl->outer_unk = pUnkOuter;
    else
       ITextImpl->outer_unk = &ITextImpl->IUnknown_inner;
+   ITextImpl->txtDoc = ReTxtDoc_create(ITextImpl->outer_unk, ITextImpl->editor);
 
    *ppUnk = &ITextImpl->IUnknown_inner;
    return S_OK;
