@@ -31,6 +31,7 @@ struct tagReTxtRng {
   ME_Cursor *first;
   ME_Cursor *lim;
   ME_TextEditor *editor;
+  BOOL ownsCursor;
 };
 
 static void ReTxtRng_destroy(ReTxtRng *txtRng);
@@ -81,6 +82,11 @@ ULONG WINAPI ITextRange_fnRelease(ITextRange* iface)
 /* ITextRange - IDispatch methods */
 static HRESULT WINAPI ITextRange_fnGetTypeInfoCount(ITextRange* iface, UINT *pctinfo)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
@@ -88,6 +94,11 @@ static HRESULT WINAPI ITextRange_fnGetTypeInfoCount(ITextRange* iface, UINT *pct
 static HRESULT WINAPI ITextRange_fnGetTypeInfo(ITextRange* iface, UINT iTInfo, LCID lcid,
     ITypeInfo **ppTInfo)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
@@ -95,6 +106,11 @@ static HRESULT WINAPI ITextRange_fnGetTypeInfo(ITextRange* iface, UINT iTInfo, L
 static HRESULT WINAPI ITextRange_fnGetIDsOfNames(ITextRange* iface, REFIID riid, LPOLESTR *rgszNames,
     UINT cNames, LCID lcid, DISPID *rgDispId)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
@@ -103,6 +119,11 @@ static HRESULT WINAPI ITextRange_fnInvoke(ITextRange* iface, DISPID dispIdMember
     WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo,
     UINT *puArgErr)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
@@ -110,227 +131,417 @@ static HRESULT WINAPI ITextRange_fnInvoke(ITextRange* iface, DISPID dispIdMember
 /* ITextRange methods */
 static HRESULT WINAPI ITextRange_fnGetText(ITextRange* iface, BSTR *pbstr)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSetText(ITextRange* iface, BSTR bstr)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetChar(ITextRange* iface, LONG *pch)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSetChar(ITextRange* iface, LONG ch)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetDuplicate(ITextRange* iface, ITextRange **ppRange)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetFormattedText(ITextRange* iface, ITextRange **ppRange)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSetFormattedText(ITextRange* iface, ITextRange *pRange)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetStart(ITextRange* iface, LONG *pcpFirst)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSetStart(ITextRange* iface, LONG cpFirst)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetEnd(ITextRange* iface, LONG *pcpLim)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSetEnd(ITextRange* iface, LONG cpLim)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetFont(ITextRange* iface, ITextFont **pFont)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSetFont(ITextRange* iface, ITextFont *pFont)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetPara(ITextRange* iface, ITextPara **ppPara)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSetPara(ITextRange* iface, ITextPara *pPara)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetStoryLength(ITextRange* iface, LONG *pcch)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetStoryType(ITextRange* iface, LONG *pValue)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnCollapse(ITextRange* iface, LONG bStart)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnExpand(ITextRange* iface, LONG Unit, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetIndex(ITextRange* iface, LONG Unit, LONG *pIndex)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSetIndex(ITextRange* iface, LONG Unit, LONG Index, LONG Extend)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSetRange(ITextRange* iface, LONG cpActive, LONG cpOther)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnInRange(ITextRange* iface, ITextRange *pRange, LONG *pb)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnInStory(ITextRange* iface, ITextRange *pRange, LONG *pb)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnIsEqual(ITextRange* iface, ITextRange *pRange, LONG *pb)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSelect(ITextRange* iface)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnStartOf(ITextRange* iface, LONG Unit, LONG Extend, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnEndOf(ITextRange* iface, LONG Unit, LONG Extend, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnMove(ITextRange* iface, LONG Unit, LONG Count, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnMoveStart(ITextRange* iface, LONG Unit, LONG Count, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnMoveEnd(ITextRange* iface, LONG Unit, LONG Count, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnMoveWhile(ITextRange* iface, VARIANT *Cset, LONG Count, LONG *pDelta) {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnMoveStartWhile(ITextRange* iface, VARIANT *Cset, LONG Count, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnMoveEndWhile(ITextRange* iface, VARIANT *Cset, LONG Count, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnMoveUntil(ITextRange* iface, VARIANT *Cset, LONG Count, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnMoveStartUntil(ITextRange* iface, VARIANT *Cset, LONG Count, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnMoveEndUntil(ITextRange* iface, VARIANT *Cset, LONG Count, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnFindText(ITextRange* iface, BSTR bstr, LONG cch, LONG Flags, LONG *pLength)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
@@ -338,6 +549,11 @@ static HRESULT WINAPI ITextRange_fnFindText(ITextRange* iface, BSTR bstr, LONG c
 static HRESULT WINAPI ITextRange_fnFindTextStart(ITextRange* iface, BSTR bstr, LONG cch, LONG Flags,
     LONG *pLength)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
@@ -345,72 +561,132 @@ static HRESULT WINAPI ITextRange_fnFindTextStart(ITextRange* iface, BSTR bstr, L
 static HRESULT WINAPI ITextRange_fnFindTextEnd(ITextRange* iface, BSTR bstr, LONG cch, LONG Flags,
     LONG *pLength)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnDelete(ITextRange* iface, LONG Unit, LONG Count, LONG *pDelta)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnCut(ITextRange* iface, VARIANT *pVar)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnCopy(ITextRange* iface, VARIANT *pVar)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnPaste(ITextRange* iface, VARIANT *pVar, LONG Format)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnCanPaste(ITextRange* iface, VARIANT *pVar, LONG Format, LONG *pb)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnCanEdit(ITextRange* iface, LONG *pb)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnChangeCase(ITextRange* iface, LONG Type)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetPoint(ITextRange* iface, LONG Type, LONG *cx, LONG *cy)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnSetPoint(ITextRange* iface, LONG x, LONG y, LONG Type, LONG Extend)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnScrollIntoView(ITextRange* iface, LONG Value)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
 
 static HRESULT WINAPI ITextRange_fnGetEmbeddedObject(ITextRange* iface, IUnknown **ppv)
 {
+  ReTxtRng *This = impl_from_ITextRange(iface);
+
+  if (This->editor == NULL)
+    return CO_E_RELEASED;
+
   FIXME("not implemented\n");
   return E_NOTIMPL;
 }
@@ -478,21 +754,39 @@ ITextRangeVtbl rangeVtbl = {
 
 ReTxtRng *ReTxtRng_create(ME_TextEditor *editor, long first, long lim)
 {
-  ReTxtRng *This;
+  ReTxtRng *txtRng;
+  ME_Cursor *startCursor;
+  ME_Cursor *endCursor;
 
   TRACE("editor: %p, first: %ld, lim: %ld\n", editor, first, lim);
   if (editor == NULL)
     ERR("editor cannot be NULL\n");
   if (first < 0 || first > lim)
     ERR("invalid first or lim: %ld - %ld\n", first, lim);
+  startCursor = heap_alloc(sizeof *startCursor);
+  endCursor = heap_alloc(sizeof *endCursor);
+  ME_CursorFromCharOfs(editor, first, startCursor);
+  ME_CursorFromCharOfs(editor, lim, endCursor);
+  txtRng = ReTxtRng_createWithCursors(editor, startCursor, endCursor);
+  /* We should destroy these cursors by ourself. */
+  txtRng->ownsCursor = TRUE;
+  return txtRng;
+}
 
-  This = heap_alloc(sizeof *This);
-  This->iTextRangeIface.lpVtbl = &rangeVtbl;
-  This->ref = 1;
-  This->editor = editor;
-  This->first = heap_alloc(sizeof(*This->first));
-  This->lim = heap_alloc(sizeof(*This->lim));
-  return This;
+ReTxtRng *ReTxtRng_createWithCursors(ME_TextEditor *editor,
+                                     ME_Cursor *start,
+                                     ME_Cursor *end)
+{
+  ReTxtRng *txtRng;
+
+  txtRng = heap_alloc(sizeof *txtRng);
+  txtRng->iTextRangeIface.lpVtbl = &rangeVtbl;
+  txtRng->ref = 1;
+  txtRng->editor = editor;
+  txtRng->first = start;
+  txtRng->lim = end;
+  txtRng->ownsCursor = FALSE;
+  return txtRng;
 }
 
 ITextRange *ReTxtRng_get_ITextRange(ReTxtRng *txtRng)
@@ -502,7 +796,20 @@ ITextRange *ReTxtRng_get_ITextRange(ReTxtRng *txtRng)
 
 static void ReTxtRng_destroy(ReTxtRng *txtRng)
 {
-  heap_free(txtRng->first);
-  heap_free(txtRng->lim);
+  if (txtRng->ownsCursor)
+  {
+    heap_free(txtRng->first);
+    heap_free(txtRng->lim);
+  }
   heap_free(txtRng);
+}
+
+void ReTxtRng_releaseEditor(ReTxtRng *txtRng)
+{
+  if (txtRng == NULL)
+  {
+    ERR("txtRng == NULL\n");
+    return;
+  }
+  txtRng->editor = NULL;
 }

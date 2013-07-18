@@ -23,6 +23,7 @@
 
 #include "editor.h"
 #include "txtrng.h"
+#include "txtsel.h"
 
 WINE_DEFAULT_DEBUG_CHANNEL(richedit);
 
@@ -32,6 +33,7 @@ struct tagReTxtDoc {
   IUnknown *outerObj;
   ME_TextEditor *editor;
   ITextDocument iTextDocumentIface;
+  ReTxtSel *txtSel;
 };
 
 /* ITextDocument implementation */
@@ -117,8 +119,14 @@ static HRESULT WINAPI ITextDocument_fnGetName(ITextDocument *iface, BSTR *pName)
 
 static HRESULT WINAPI ITextDocument_fnGetSelection(ITextDocument *me, ITextSelection **ppSel)
 {
-  FIXME("not implemented\n");
-  return E_NOTIMPL;
+  ReTxtDoc *This = impl_from_ITextDocument(me);
+
+  if (ppSel == NULL)
+    return E_INVALIDARG;
+
+  *ppSel = ReTxtSel_get_ITextSelection(This->txtSel);
+  ITextSelection_AddRef(*ppSel);
+  return S_OK;
 }
 
 static HRESULT WINAPI ITextDocument_fnGetStoryCount(ITextDocument *iface, LONG *pCount)
@@ -285,6 +293,7 @@ ReTxtDoc *ReTxtDoc_create(IUnknown *outerObj, ME_TextEditor *editor)
 
   This->outerObj = outerObj;
   This->editor = editor;
+  This->txtSel = ReTxtSel_create(editor);
   This->iTextDocumentIface.lpVtbl = &vtbl;
   return This;
 }
@@ -297,8 +306,15 @@ ITextDocument *ReTxtDoc_get_ITextDocument(ReTxtDoc *document)
 
 void ReTxtDoc_destroy(ReTxtDoc *document)
 {
+  ULONG selRef;
   TRACE("(%p)\n", document);
   document->outerObj = NULL;
   document->editor = NULL;
+
+  selRef = ITextSelection_Release(ReTxtSel_get_ITextSelection(document->txtSel));
+  if (selRef != 0)
+  {
+    ReTxtSel_releaseEditor(document->txtSel);
+  }
   heap_free(document);
 }

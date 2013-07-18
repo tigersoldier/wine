@@ -1,5 +1,5 @@
 /*
- * RichEdit - ITextRange implementation
+ * RichEdit - ITextSelection implementation
  *
  * Copyright 2013 by Caibin Chen
  *
@@ -18,26 +18,21 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __TXTRNG_H
-#define __TXTRNG_H
+#ifndef __TXTSEL_H
+#define __TXTSEL_H
 
 #include <tom.h>
 
 #include "editstr.h"
 
-typedef struct tagReTxtRng ReTxtRng;
+typedef struct tagReTxtSel ReTxtSel;
 
-ReTxtRng *ReTxtRng_create(ME_TextEditor *editor,
-                          long first,
-                          long lim);
-ReTxtRng *ReTxtRng_createWithCursors(ME_TextEditor *editor,
-                                     ME_Cursor *start,
-                                     ME_Cursor *end);
-ITextRange *ReTxtRng_get_ITextRange(ReTxtRng *txtRng);
+ReTxtSel *ReTxtSel_create(ME_TextEditor *editor);
+ITextSelection *ReTxtSel_get_ITextSelection(ReTxtSel *txtSel);
 /**
  * Mark the attached editor as released so that all calls related to
  * the editor will return CO_E_RELEASED.
  */
-void ReTxtRng_releaseEditor(ReTxtRng *txtRng);
+void ReTxtSel_releaseEditor(ReTxtSel *txtSel);
 
-#endif /* __TXTRNG_H */
+#endif /* __TXTSEL_H */

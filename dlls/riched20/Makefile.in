@@ -21,6 +21,7 @@ C_SRCS = \
 	txtdoc.c \
 	txthost.c \
 	txtrng.c \
+	txtsel.c \
 	txtsrv.c \
 	undo.c \
 	wrap.c \
