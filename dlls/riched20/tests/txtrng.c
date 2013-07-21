@@ -37,8 +37,11 @@ static HWND new_window(LPCTSTR lpClassName, DWORD dwStyle, HWND parent);
 static HWND new_richedit(HWND parent);
 static BOOL clear_text(ITextDocument *txtDoc);
 static int insert_text_at_start(ITextDocument *txtDoc, const char *text);
+static int insert_text_at_pos(ITextDocument *txtDoc, const char *text, int pos);
+static BOOL delete_text_in_range_pos(ITextDocument *txtDoc, int start, int end);
 static BOOL set_text(ITextDocument *txtDoc, const char *text);
 static ITextRange* get_range(ITextDocument *txtDoc, long cpFirst, long cpLim);
+static BOOL check_range_pos(ITextRange *txtRng, int expectedStart, int expectedEnd);
 static int set_range_text(ITextRange *txtRng, const char *text);
 
 static HMODULE hmoduleRichEdit;
@@ -108,12 +111,36 @@ static BOOL clear_text(ITextDocument *txtDoc)
  */
 static int insert_text_at_start(ITextDocument *txtDoc, const char *text)
 {
+  return insert_text_at_pos(txtDoc, text, 0);
+}
+
+static int insert_text_at_pos(ITextDocument *txtDoc, const char *text, int pos)
+{
   ITextRange *txtRng = NULL;
   int len;
+  HRESULT hres;
+  LONG rangePos;
 
-  txtRng = get_range(txtDoc, 0, 0);
+  txtRng = get_range(txtDoc, pos, pos);
   if (!txtRng) {
-    todo_wine skip("Cannot insert text at start: get range failed\n");
+    todo_wine skip("Cannot insert text at pos %d: get range failed\n", pos);
+    return 0;
+  }
+
+  hres = ITextRange_GetStart(txtRng, &rangePos);
+  if (hres != S_OK)
+  {
+    todo_wine skip("Cannot insert text at pos %d: get range start failed\n", pos);
+    return 0;
+  }
+
+  if (rangePos != pos)
+  {
+    todo_wine
+    {
+      skip("Cannot insert text: expected insertion pos at %d but got %d\n",
+           pos, (int) rangePos);
+    }
     return 0;
   }
 
@@ -161,6 +188,37 @@ static ITextRange* get_range(ITextDocument *txtDoc, long cpFirst, long cpLim)
   }
 }
 
+static BOOL check_range_pos(ITextRange *txtRng, int expectedStart, int expectedEnd)
+{
+  LONG cpStart;
+  LONG cpLim;
+  BOOL ret = TRUE;
+
+  if (ITextRange_GetStart(txtRng, &cpStart) != S_OK)
+  {
+    todo_wine ok(FALSE, "Get start pos failed\n");
+    ret = FALSE;
+  }
+  if (ITextRange_GetEnd(txtRng, &cpLim) != S_OK)
+  {
+    todo_wine ok(FALSE, "Get end pos failed\n");
+    ret = FALSE;
+  }
+
+  if (cpStart != expectedStart)
+  {
+    todo_wine ok(FALSE, "Expected start pos %d, but got %d\n", expectedStart, (int) cpStart);
+    ret = FALSE;
+  }
+
+  if (cpLim != expectedEnd)
+  {
+    todo_wine ok(FALSE, "Expected end pos %d, but got %d\n", expectedEnd, (int) cpLim);
+    ret = FALSE;
+  }
+  return ret;
+}
+
 /**
  * @return Length of the wide string set to the range. 0 on failure.
  */
@@ -192,6 +250,29 @@ static int set_range_text(ITextRange *txtRng, const char *text)
   }
   return len;
 }
+
+static BOOL delete_text_in_range_pos(ITextDocument *txtDoc, int start, int end)
+{
+  ITextRange *range;
+  HRESULT hres;
+
+  range = get_range(txtDoc, start, end);
+  if (range == NULL)
+  {
+    todo_wine ok(FALSE, "Get range in %d, %d failed\n", start, end);
+    return FALSE;
+  }
+  if (!check_range_pos(range, start, end))
+  {
+    todo_wine ok(FALSE, "check_range_pos failed\n");
+    return FALSE;
+  }
+
+  hres = ITextRange_Delete(range, tomWord, 0, NULL);
+  return hres == S_OK;
+}
+
+/* Testing functions */
 
 static void test_SetText(ITextDocument *txtDoc)
 {
@@ -306,6 +387,113 @@ static void test_range_start_end(ITextDocument *txtDoc)
   }
 }
 
+/* Test data for test_range_pos_after_insertion() */
+struct RangeInsertTestData
+{
+  int start;
+  int end;
+  int insertPos;
+  const char *text;
+  int expectedStart;
+  int expectedEnd;
+};
+
+const static struct RangeInsertTestData rangeInsertTestData[] = {
+  {0, 10, 5, "Text", 0, 14},
+  {0, 10, 0, "Text", 0, 14},
+  {0, 10, 10, "Text", 0, 10},
+  {0, 0, 0, "Text", 0, 0},
+  {4, 10, 3, "Text", 8, 14},
+  {0, 10, 11, "Text", 0, 10},
+};
+
+static void test_range_pos_after_insertion(ITextDocument *txtDoc)
+{
+  int i;
+  set_text(txtDoc, "abcdefghijklmnopqrstuvwxyz");
+  for (i = 0; i < sizeof(rangeInsertTestData) / sizeof(rangeInsertTestData[0]); i++)
+  {
+    struct RangeInsertTestData testData;
+    ITextRange *range;
+
+    testData = rangeInsertTestData[i];
+    range = get_range(txtDoc, testData.start, testData.end);
+    if (range == NULL)
+    {
+      todo_wine skip("Cannot get range in [%d, %d]\n", testData.start, testData.end);
+      continue;
+    }
+
+    todo_wine
+    {
+      ok(insert_text_at_pos(txtDoc, testData.text, testData.insertPos),
+         "Cannot insert text %s at %d\n", testData.text, testData.insertPos);
+    }
+
+    todo_wine
+    {
+      ok(check_range_pos(range, testData.expectedStart, testData.expectedEnd),
+         "check_range_pos failed\n");
+    }
+  }
+}
+
+struct RangeDeleteTestData
+{
+  int start, end;
+  int delStart, delEnd;
+  int expectedStart, expectedEnd;
+};
+
+const static struct RangeDeleteTestData rangeDeleteTestData[] = {
+  /* Full deletion */
+  { 5, 10, 5, 10, 5, 5},
+  /* Partial deletion */
+  { 5, 10, 5, 9, 5, 6},
+  { 5, 10, 6, 10, 5, 6},
+  { 5, 10, 6, 9, 5, 7},
+  /* Overlapped deletion */
+  { 5, 10, 4, 6, 4, 8},
+  { 5, 10, 9, 11, 5, 9},
+  { 5, 10, 4, 11, 4, 4},
+  /* Outside deletion */
+  { 5, 10, 1, 4, 2, 7},
+  { 5, 10, 1, 5, 1, 6},
+  { 5, 10, 11, 14, 5, 10},
+  { 5, 10, 10, 14, 5, 10},
+};
+
+static void test_range_pos_after_deletion(ITextDocument *txtDoc)
+{
+  int i;
+  for (i = 0; i < sizeof(rangeDeleteTestData) / sizeof(rangeDeleteTestData[0]); i++)
+  {
+    ITextRange *range;
+    struct RangeDeleteTestData testData;
+
+    set_text(txtDoc, "abcdefghijklmnopqrstuvwxyz");
+    testData = rangeDeleteTestData[i];
+    range = get_range(txtDoc, testData.start, testData.end);
+    if (range == NULL)
+    {
+      todo_wine skip("Failed to get range in %d, %d\n", testData.start, testData.end);
+      continue;
+    }
+    todo_wine
+    {
+      ok(delete_text_in_range_pos(txtDoc, testData.delStart, testData.delEnd),
+         "Failed to delete text in range %d, %d\n",
+         testData.delStart, testData.delEnd);
+    }
+
+    todo_wine
+    {
+      ok(check_range_pos(range, testData.expectedStart, testData.expectedEnd),
+         "check_range_pos failed\n");
+    }
+  }
+}
+
 START_TEST(txtrng)
 {
   IRichEditOle *reOle = NULL;
@@ -336,6 +524,8 @@ START_TEST(txtrng)
 
   test_SetText(txtDoc);
   test_range_start_end(txtDoc);
+  test_range_pos_after_insertion(txtDoc);
+  test_range_pos_after_deletion(txtDoc);
 
   ITextDocument_Release(txtDoc);
   IRichEditOle_Release(reOle);
